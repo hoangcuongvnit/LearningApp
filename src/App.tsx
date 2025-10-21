@@ -9,6 +9,7 @@ type View = 'list' | 'create' | 'login'
 export default function App() {
   const [view, setView] = useState<View>('list')
   const [token, setTokenState] = useState<string | null>(getToken())
+  const [editingSentence, setEditingSentence] = useState<{ id?: string; english?: string; vietnamese?: string } | null>(null)
 
   useEffect(() => {
     setTokenState(getToken())
@@ -24,6 +25,11 @@ export default function App() {
     clearToken()
     setTokenState(null)
     setView('login')
+  }
+
+  function handleEditSentence(s: { id?: string; english?: string; vietnamese?: string }) {
+    setEditingSentence(s)
+    setView('create')
   }
 
   if (!isAuthenticated()) {
@@ -71,11 +77,11 @@ export default function App() {
         {view === 'login' && <LoginForm onLogin={onLogin} />}
 
         {view === 'create' && (
-          <CreateSentenceForm token={token ?? ''} onSuccess={() => setView('list')} />
+          <CreateSentenceForm token={token ?? ''} initial={editingSentence ?? undefined} onSuccess={() => { setEditingSentence(null); setView('list') }} />
         )}
 
         {view === 'list' && (
-          <SentenceList token={token ?? ''} />
+          <SentenceList token={token ?? ''} onEdit={handleEditSentence} />
         )}
       </main>
     </div>
