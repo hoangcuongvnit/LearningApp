@@ -1,5 +1,8 @@
 # LearningApp
 
+[![Deploy](https://github.com/hoangcuongvnit/LearningApp/actions/workflows/deploy.yml/badge.svg)](https://github.com/hoangcuongvnit/LearningApp/actions/workflows/deploy.yml)
+# LearningApp
+
 Vite + React + TypeScript + Bootstrap starter
 
 Quick start
@@ -25,4 +28,7 @@ Required repository secrets (Settings → Secrets → Actions):
 The workflow runs on pushes to `main`. It executes `npm ci`, `npm run build` and then uploads `./dist/` to the FTP server using the `SamKirkland/FTP-Deploy-Action`.
 
 Make sure the FTP user has write permissions to `FTP_DEST`.
+Note about the badge
+
+The badge at the top shows the status of the `deploy.yml` workflow on the `main` branch. It will display once the workflow has run at least once on GitHub Actions.
 
