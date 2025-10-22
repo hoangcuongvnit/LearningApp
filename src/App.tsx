@@ -76,7 +76,21 @@ export default function App() {
         {view === 'login' && <LoginForm onLogin={onLogin} />}
 
         {view === 'create' && (
-          <CreateSentenceForm token={token ?? ''} initial={editingSentence ?? undefined} onSuccess={() => { setEditingSentence(null); setView('list') }} />
+          <CreateSentenceForm
+            token={token ?? ''}
+            initial={editingSentence ?? undefined}
+            onSuccess={() => {
+              // If we were editing an existing sentence, return to the list after saving.
+              // If we were creating a new sentence, stay on the create form so the user can add another.
+              if (editingSentence) {
+                setEditingSentence(null)
+                setView('list')
+              } else {
+                // clear edit state and remain on create for continuous adds
+                setEditingSentence(null)
+              }
+            }}
+          />
         )}
 
         {view === 'list' && (
