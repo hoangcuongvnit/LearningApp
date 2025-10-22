@@ -62,7 +62,6 @@ export default function App() {
             <div className="d-flex">
               {isAuthenticated() ? (
                 <>
-                  <span className="navbar-text me-2">Logged in</span>
                   <button className="btn btn-outline-secondary" onClick={onLogout}>Logout</button>
                 </>
               ) : (

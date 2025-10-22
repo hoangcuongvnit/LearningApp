@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { graphql } from '../utils/api'
 import CreateSentenceForm from './CreateSentenceForm'
 
@@ -12,6 +12,8 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState<Sentence | null>(null)
+  const [playingId, setPlayingId] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     fetchPage(page)
@@ -42,6 +44,54 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
       fetchPage(page)
     } catch (err: any) {
       alert(err.message || String(err))
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        try { audioRef.current.pause() } catch {}
+        audioRef.current = null
+      }
+    }
+  }, [])
+
+  function getAudioSrc(url?: string) {
+    if (!url) return null
+    return url.startsWith('http') ? url : 'https://apis.aznetviet.xyz' + url
+  }
+
+  function togglePlay(it: Sentence) {
+    const src = getAudioSrc(it.audioUrl)
+    if (!src) return
+
+    // if currently playing this item -> stop
+    if (playingId === it.id && audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      audioRef.current = null
+      setPlayingId(null)
+      return
+    }
+
+    // stop existing audio
+    if (audioRef.current) {
+      try { audioRef.current.pause() } catch {}
+      audioRef.current = null
+      setPlayingId(null)
+    }
+
+    const a = new Audio(src)
+    audioRef.current = a
+    a.play().then(() => {
+      setPlayingId(it.id)
+    }).catch(err => {
+      console.error('audio play failed', err)
+      setPlayingId(null)
+    })
+    a.onended = () => {
+      setPlayingId(null)
+      audioRef.current = null
     }
   }
 
@@ -77,7 +127,11 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
                   </td>
                   <td>
                     {it.audioUrl ? (
-                      <a href={it.audioUrl} target="_blank" rel="noreferrer">Listen</a>
+                      <div>
+                        <button aria-label={playingId === it.id ? 'Pause' : 'Play'} className="btn btn-sm btn-outline-secondary" onClick={() => togglePlay(it)}>
+                          {playingId === it.id ? '⏸' : '▶'}
+                        </button>
+                      </div>
                     ) : (
                       <span className="text-muted">—</span>
                     )}
