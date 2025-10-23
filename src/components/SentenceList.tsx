@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { graphql } from '../utils/api'
 import CreateSentenceForm from './CreateSentenceForm'
 
-type Sentence = { id: string; english: string; vietnamese: string; audioUrl?: string }
+type Sentence = { id: string; english: string; vietnamese: string; audioUrl?: string; studyCount: number }
 
 export default function SentenceList({ token, onEdit }: { token?: string, onEdit?: (s: Sentence) => void }) {
   const [items, setItems] = useState<Sentence[]>([])
@@ -23,7 +23,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     setLoading(true)
     setError(null)
     try {
-      const query = `query($limit:Int,$offset:Int){ sentences(limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl } total } }`
+      const query = `query($limit:Int,$offset:Int){ sentences(limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl studyCount } total } }`
       const variables = { limit: pageSize, offset: (p - 1) * pageSize }
       const data = await graphql(query, variables, token)
       setItems(data.sentences.items)
@@ -113,9 +113,10 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
           <table className="table table-hover align-middle">
             <thead>
               <tr>
-                <th style={{ width: '60%' }}>Text</th>
-                <th style={{ width: '20%' }}>Audio</th>
-                <th style={{ width: '20%' }}>Action</th>
+                <th style={{ width: '65%' }}>Text</th>
+                <th style={{ width: '15%' }}>Audio</th>
+                <th style={{ width: '10%' }}>C</th>
+                <th style={{ width: '10%' }}>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -136,6 +137,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
                       <span className="text-muted">—</span>
                     )}
                   </td>
+                  <td>{it.studyCount ?? 0}</td>
                   <td>
                     <div className="d-flex gap-2">
                       <button className="btn btn-sm btn-outline-primary" onClick={() => onEdit ? onEdit(it) : setEditing(it)}>Edit</button>

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import LoginForm from './components/LoginForm'
 import CreateSentenceForm from './components/CreateSentenceForm'
+import LearnView from './components/LearnView'
+import ReviewView from './components/ReviewView'
 import SentenceList from './components/SentenceList'
 import { getToken, setToken, clearToken, isAuthenticated } from './utils/auth'
 
-type View = 'list' | 'create' | 'login'
+type View = 'learn' | 'review' | 'list' | 'create' | 'login'
 
 export default function App() {
-  const [view, setView] = useState<View>('list')
+  const [view, setView] = useState<View>('learn')
   const [token, setTokenState] = useState<string | null>(getToken())
   const [editingSentence, setEditingSentence] = useState<{ id?: string; english?: string; vietnamese?: string } | null>(null)
 
@@ -18,7 +20,7 @@ export default function App() {
   function onLogin(newToken: string) {
     setToken(newToken)
     setTokenState(newToken)
-    setView('list')
+    setView('learn')
   }
 
   function onLogout() {
@@ -52,10 +54,16 @@ export default function App() {
           <div className="collapse navbar-collapse" id="nav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
+                <button className={`nav-link btn btn-link ${view === 'learn' ? 'active' : ''}`} onClick={() => setView('learn')}>Learn</button>
+              </li>
+              <li className="nav-item">
                 <button className={`nav-link btn btn-link ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>Sentences</button>
               </li>
               <li className="nav-item">
                 <button className={`nav-link btn btn-link ${view === 'create' ? 'active' : ''}`} onClick={() => setView('create')}>Create</button>
+              </li>
+              <li className="nav-item">
+                <button className={`nav-link btn btn-link ${view === 'review' ? 'active' : ''}`} onClick={() => setView('review')}>Review</button>
               </li>
             </ul>
 
@@ -93,8 +101,16 @@ export default function App() {
           />
         )}
 
+        {view === 'learn' && (
+          <LearnView token={token ?? ''} />
+        )}
+
         {view === 'list' && (
           <SentenceList token={token ?? ''} onEdit={handleEditSentence} />
+        )}
+
+        {view === 'review' && (
+          <ReviewView token={token ?? ''} />
         )}
       </main>
     </div>
