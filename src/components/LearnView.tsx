@@ -200,13 +200,13 @@ export default function LearnView({ token }: { token?: string }) {
           <div className="card text-center">
             <div className="card-body">
               <h2 className="card-title mb-3">{sentence.english}</h2>
-              <div className="mb-3">
+              <div className="mb-3 main-btn-group">
                 <button className="btn btn-outline-primary me-2" onClick={togglePlay}>{playing ? '⏸ Pause' : '▶ Play'}</button>
                 <button className="btn btn-outline-secondary me-2" onClick={() => setShowVN(s => !s)}>{showVN ? 'Hide Vietnamese' : 'Show Vietnamese'}</button>
                 <button className="btn btn-success" onClick={finish}>Finish</button>
               </div>
 
-              {showVN && <div className="mt-3 text-muted fs-5">{sentence.vietnamese}</div>}
+              {showVN && <div className="mt-3 text-muted fs-5 show-text-feature">{sentence.vietnamese}</div>}
             </div>
           </div>
         </div>
