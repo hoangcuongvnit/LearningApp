@@ -29,6 +29,6 @@ body {
 }
 
 .description-data {
-  max-height: 350px;
+  max-height: calc(100vh - 430px);
   overflow-y: auto;
 }
