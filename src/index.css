@@ -30,5 +30,6 @@ body {
 
 .description-data {
   max-height: calc(100vh - 430px);
+  min-height: 250px;
   overflow-y: auto;
 }
