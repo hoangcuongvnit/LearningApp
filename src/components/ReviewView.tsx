@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { graphql } from '../utils/api'
 
-type Sentence = { id: string; english: string; vietnamese: string; audioUrl?: string }
+type Sentence = { id: string; english: string; vietnamese: string; audioUrl?: string; description?: string; studyCount?: number }
 
 export default function ReviewView({ token }: { token?: string }) {
   const [sentence, setSentence] = useState<Sentence | null>(null)
@@ -66,7 +66,7 @@ export default function ReviewView({ token }: { token?: string }) {
       setUserId(uid)
 
       // request reviewStudySentence (Query)
-      const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese audioUrl } }`
+      const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
       const next = await graphql(q2, { userId: uid }, token)
       const ns = next?.reviewStudySentence
       if (!ns) {
@@ -92,6 +92,16 @@ export default function ReviewView({ token }: { token?: string }) {
     return url.startsWith('http') ? url : 'https://apis.aznetviet.xyz' + url
   }
 
+  function formatDescription(text: string) {
+    // Convert line breaks to <br> tags and preserve formatting
+    return text
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold markdown
+      .replace(/### (.*?)(<br>|$)/g, '<h5>$1</h5>') // Headers
+      .replace(/- (.*?)(<br>|$)/g, '<li>$1</li>') // List items
+      .replace(/(<li>.*<\/li>)/g, '<ul style="list-style-position: inside; text-align: left;">$1</ul>') // Wrap lists
+  }
+
   async function fetchOne(i: number) {
     setLoading(true)
     setError(null)
@@ -100,14 +110,38 @@ export default function ReviewView({ token }: { token?: string }) {
     setPlaying(false)
     if (audioRef.current) { try { audioRef.current.pause() } catch { } audioRef.current = null }
     try {
-      const query = `query($limit:Int,$offset:Int){ sentences(limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl } total } }`
-      const variables = { limit: 1, offset: i }
-      const data = await graphql(query, variables, token)
-      const items = data?.sentences?.items || []
-      if (items.length === 0) {
+      if (!token) {
+        setError('Authentication required')
         setSentence(null)
+        return
+      }
+
+      // Ensure we have userId
+      let uid = userId
+      if (!uid) {
+        const meQ = `query{ me { id } }`
+        const meData = await graphql(meQ, {}, token)
+        uid = meData?.me?.id
+        if (uid) setUserId(uid)
+      }
+
+      if (!uid) {
+        setError('Unable to determine user id')
+        setSentence(null)
+        return
+      }
+
+      // Fetch next review sentence
+      const query = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
+      const next = await graphql(query, { userId: uid }, token)
+      const ns = next?.reviewStudySentence
+      if (!ns) {
+        setSentence(null)
+        setEmptyMessage('No review sentence available')
       } else {
-        setSentence(items[0])
+        setSentence(ns)
+        setshowEN(false)
+        setIsAutoSet(true)
       }
     } catch (err: any) {
       setError(err.message || String(err))
@@ -178,7 +212,7 @@ export default function ReviewView({ token }: { token?: string }) {
         await graphql(m1, { userId: uid, sentenceId: sid }, token)
 
         // 2) request next sentence (this is a Query, not a Mutation)
-        const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese audioUrl } }`
+        const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
         const next = await graphql(q2, { userId: uid }, token)
         const ns = next?.reviewStudySentence
         if (!ns) {
@@ -212,8 +246,17 @@ export default function ReviewView({ token }: { token?: string }) {
                 <button className="btn btn-outline-secondary" onClick={() => setshowEN(s => !s)}>{showEN ? 'Hide English' : 'Show English'}</button>
               </div>
 
-              {showEN && <div className="mt-3 text-muted fs-5 show-text-feature">{sentence.english}</div>}
+              <div className="show-text-feature">{showEN && sentence.english}</div>
+              <div className='show-study-count'>{sentence.studyCount ?? 0}</div>
             </div>
+
+            {sentence.description && (
+                  <div 
+                    className='card-footer description-data' 
+                    style={{ textAlign: 'left', whiteSpace: 'pre-wrap', marginTop: '1rem' }}
+                    dangerouslySetInnerHTML={{ __html: formatDescription(sentence.description) }}
+                  ></div>
+                )}
           </div>
         </div>
       )}
