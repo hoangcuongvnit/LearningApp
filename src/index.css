@@ -29,7 +29,17 @@ body {
 }
 
 .description-data {
-  max-height: calc(100vh - 430px);
-  min-height: 250px;
-  overflow-y: auto;
+  max-height: calc(100vh - 330px);
+  overflow: auto;
+  padding: 0.75rem;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .description-data {
+    max-height: calc(100vh - 450px);
+    min-height: 250px;
+    font-size: 16px;
+  }
 }

@@ -14,6 +14,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
   const [editing, setEditing] = useState<Sentence | null>(null)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [generating, setGenerating] = useState(false)
 
   useEffect(() => {
     fetchPage(page)
@@ -44,6 +45,63 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
       fetchPage(page)
     } catch (err: any) {
       alert(err.message || String(err))
+    }
+  }
+
+  async function generateMissingFields() {
+    if (!token) {
+      alert('Authentication required')
+      return
+    }
+
+    const dryRun = confirm('Do you want to preview changes first? (Click OK for preview, Cancel to apply immediately)')
+    const limit = prompt('How many sentences to process?', '10')
+    if (!limit) return
+
+    setGenerating(true)
+    setError(null)
+
+    try {
+      const query = `mutation($input:BatchGenerateInput!){
+        batchGenerateMissingFields(input:$input){
+          processed
+          updated
+          errors
+          details{ id english fields action }
+        }
+      }`
+      const variables = {
+        input: {
+          dryRun,
+          limit: parseInt(limit, 10)
+        }
+      }
+
+      const result = await graphql(query, variables, token)
+      const data = result.batchGenerateMissingFields
+
+      // Show results
+      let message = `Processed: ${data.processed}\nUpdated: ${data.updated}\n`
+      if (data.errors && data.errors.length > 0) {
+        message += `\nErrors:\n${data.errors.join('\n')}`
+      }
+      if (data.details && data.details.length > 0) {
+        message += `\n\nDetails:\n${data.details.map((d: any) => 
+          `- ID ${d.id}: ${d.english.substring(0, 40)}... | Fields: ${d.fields?.join(', ') || 'none'} | Action: ${d.action}`
+        ).join('\n')}`
+      }
+
+      alert(message)
+
+      // If it was not a dry run, refresh the list
+      if (!dryRun) {
+        fetchPage(page)
+      }
+    } catch (err: any) {
+      setError(err.message || String(err))
+      alert('Error: ' + (err.message || String(err)))
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -101,6 +159,13 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     <div>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="m-0">Sentences</h3>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => generateMissingFields()}
+          disabled={generating}
+        >
+          {generating ? 'Generating...' : 'Generate Missing Fields'}
+        </button>
         <div className="text-muted">Total: {total}</div>
       </div>
 
