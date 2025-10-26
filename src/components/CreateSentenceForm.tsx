@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { graphql } from '../utils/api'
 
-type Initial = { id?: string; english?: string; vietnamese?: string; voice?: string }
+type Initial = { id?: string; english?: string; vietnamese?: string; voice?: string; description?: string }
 
 export default function CreateSentenceForm({ token, onSuccess, initial }: { token: string, onSuccess?: () => void, initial?: Initial }) {
   const [english, setEnglish] = useState(initial?.english ?? '')
   const [vietnamese, setVietnamese] = useState(initial?.vietnamese ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
   const [voice, setVoice] = useState<string>(initial && (initial as any).voice ? (initial as any).voice : '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -13,6 +14,7 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
   useEffect(() => {
     setEnglish(initial?.english ?? '')
     setVietnamese(initial?.vietnamese ?? '')
+    setDescription(initial?.description ?? '')
     setVoice(initial && (initial as any).voice ? (initial as any).voice : '')
   }, [initial])
 
@@ -22,20 +24,26 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
     setError(null)
     try {
       if (initial && initial.id) {
-  // server expects Int for id and UpdateSentenceInput for update
-  const query = `mutation($id:Int!,$i:UpdateSentenceInput!){ updateSentence(id:$id,input:$i){ id english vietnamese audioUrl } }`
-  const input: any = { english, vietnamese }
-  if (voice) input.voice = voice
-  const variables = { id: Number(initial.id), i: input }
+        // server expects Int for id and UpdateSentenceInput for update
+        const query = `mutation($id:Int!,$i:UpdateSentenceInput!){ updateSentence(id:$id,input:$i){ id english vietnamese audioUrl } }`
+        const input: any = {}
+        if (english) input.english = english
+        if (vietnamese) input.vietnamese = vietnamese
+        if (description) input.description = description
+        if (voice) input.voice = voice
+        const variables = { id: Number(initial.id), i: input }
         await graphql(query, variables, token)
       } else {
         const query = `mutation($i:CreateSentenceInput!){ createSentence(input:$i){ id english vietnamese audioUrl } }`
-        const input: any = { english, vietnamese }
+        const input: any = { english }
+        if (vietnamese) input.vietnamese = vietnamese
+        if (description) input.description = description
         if (voice) input.voice = voice
         const variables = { i: input }
         await graphql(query, variables, token)
         setEnglish('')
         setVietnamese('')
+        setDescription('')
       }
 
       if (onSuccess) onSuccess()
@@ -60,7 +68,11 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
           </div>
           <div className="mb-3">
             <label className="form-label">Vietnamese</label>
-            <input className="form-control" value={vietnamese} onChange={e => setVietnamese(e.target.value)} required />
+            <input className="form-control" value={vietnamese} onChange={e => setVietnamese(e.target.value)} />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Description</label>
+            <textarea className="form-control" value={description} onChange={e => setDescription(e.target.value)} rows={3} />
           </div>
           <div className="mb-3">
             <label className="form-label">Voice</label>

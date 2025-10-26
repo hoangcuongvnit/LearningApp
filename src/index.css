@@ -19,11 +19,16 @@ body {
 }
 
 .show-text-feature {
-  position: absolute;
-  bottom: -50px;
   width: 100%;
+  min-height: 46px;
+  font-size: 14px;
 }
 
 .row-sentence .btn {
   width: auto;
+}
+
+.description-data {
+  max-height: 350px;
+  overflow-y: auto;
 }
