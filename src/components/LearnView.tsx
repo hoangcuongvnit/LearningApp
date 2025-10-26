@@ -241,6 +241,7 @@ export default function LearnView({ token }: { token?: string }) {
               </div>
 
               <div className="show-text-feature">{showVN && sentence.vietnamese}</div>
+              <div className='show-study-count'>{sentence.studyCount ?? 0}</div>
             </div>
 
             {sentence.description && (

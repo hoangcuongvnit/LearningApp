@@ -1,7 +1,10 @@
 /* Minimal global styles */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
@@ -10,9 +13,11 @@ body {
 .btn.btn-outline-primary {
   width: 98px;
 }
+
 .btn.btn-outline-secondary {
   width: 160px;
 }
+
 .main-btn-group .btn {
   margin-bottom: 12px;
   padding: 14px 12px;
@@ -22,6 +27,17 @@ body {
   width: 100%;
   min-height: 46px;
   font-size: 14px;
+}
+
+.show-study-count {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-weight: bold;
+  margin-right: 8px;
+  background-color: bisque;
+  padding: 3px;
+  border-radius: 8px;
 }
 
 .row-sentence .btn {
