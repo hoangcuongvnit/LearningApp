@@ -7,13 +7,13 @@ export default function ReviewView({ token }: { token?: string }) {
   const [sentence, setSentence] = useState<Sentence | null>(null)
   const [index, setIndex] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showEN, setshowEN] = useState(false)
   const [playing, setPlaying] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [userId, setUserId] = useState<number | null>(null)
   const [emptyMessage, setEmptyMessage] = useState<string | null>(null)
+  const [isAutoSet, setIsAutoSet] = useState(true)
 
   useEffect(() => {
     if (index === 0) {
@@ -25,11 +25,21 @@ export default function ReviewView({ token }: { token?: string }) {
     // cleanup audio when unmount
     return () => {
       if (audioRef.current) {
-        try { audioRef.current.pause() } catch {}
+        try { audioRef.current.pause() } catch { }
         audioRef.current = null
       }
     }
   }, [index, token])
+
+  useEffect(() => {
+    if (isAutoSet && sentence) {
+      const timeout = setTimeout(() => {
+        if (showEN) setIsAutoSet(false)
+        setshowEN(!showEN)
+      }, 4000)
+      return () => clearTimeout(timeout)
+    }
+  }, [sentence, showEN, isAutoSet])
 
   async function fetchInitial() {
     setLoading(true)
@@ -37,7 +47,7 @@ export default function ReviewView({ token }: { token?: string }) {
     setEmptyMessage(null)
     setshowEN(false)
     setPlaying(false)
-    if (audioRef.current) { try { audioRef.current.pause() } catch {} audioRef.current = null }
+    if (audioRef.current) { try { audioRef.current.pause() } catch { } audioRef.current = null }
     try {
       if (!token) {
         // not authenticated: fall back to regular fetch
@@ -71,7 +81,7 @@ export default function ReviewView({ token }: { token?: string }) {
     } catch (err: any) {
       setError(err.message || String(err))
       // on error, try the fallback
-      try { await fetchOne(0) } catch {}
+      try { await fetchOne(0) } catch { }
     } finally {
       setLoading(false)
     }
@@ -88,7 +98,7 @@ export default function ReviewView({ token }: { token?: string }) {
     setEmptyMessage(null)
     setshowEN(false)
     setPlaying(false)
-    if (audioRef.current) { try { audioRef.current.pause() } catch {} audioRef.current = null }
+    if (audioRef.current) { try { audioRef.current.pause() } catch { } audioRef.current = null }
     try {
       const query = `query($limit:Int,$offset:Int){ sentences(limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl } total } }`
       const variables = { limit: 1, offset: i }
@@ -117,7 +127,7 @@ export default function ReviewView({ token }: { token?: string }) {
       return
     }
     if (audioRef.current) {
-      try { audioRef.current.pause() } catch {}
+      try { audioRef.current.pause() } catch { }
       audioRef.current = null
       setPlaying(false)
     }
@@ -129,17 +139,16 @@ export default function ReviewView({ token }: { token?: string }) {
 
   function finish() {
     // mark studied and ask server for the next sentence
-    ;(async () => {
+    ; (async () => {
       if (!sentence) return
       setError(null)
       if (!token) {
         setError('Not authenticated')
         return
       }
-      setWorking(true)
       // stop any playing audio
       if (audioRef.current) {
-        try { audioRef.current.pause() } catch {}
+        try { audioRef.current.pause() } catch { }
         audioRef.current = null
       }
       setPlaying(false)
@@ -168,9 +177,9 @@ export default function ReviewView({ token }: { token?: string }) {
         const m1 = `mutation($userId:Int!,$sentenceId:Int!){ markSentenceStudied(userId:$userId,sentenceId:$sentenceId){ id } }`
         await graphql(m1, { userId: uid, sentenceId: sid }, token)
 
-  // 2) request next sentence (this is a Query, not a Mutation)
-  const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese audioUrl } }`
-  const next = await graphql(q2, { userId: uid }, token)
+        // 2) request next sentence (this is a Query, not a Mutation)
+        const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese audioUrl } }`
+        const next = await graphql(q2, { userId: uid }, token)
         const ns = next?.reviewStudySentence
         if (!ns) {
           // fallback: advance by index if server returned nothing
@@ -181,8 +190,6 @@ export default function ReviewView({ token }: { token?: string }) {
         }
       } catch (err: any) {
         setError(err.message || String(err))
-      } finally {
-        setWorking(false)
       }
     })()
   }
@@ -190,8 +197,8 @@ export default function ReviewView({ token }: { token?: string }) {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
       {loading && <div className="text-muted">Loading...</div>}
-  {error && <div className="alert alert-danger">{error}</div>}
-  {!loading && !sentence && <div className="text-muted">{emptyMessage ?? 'No sentence available'}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
+      {!loading && !sentence && <div className="text-muted">{emptyMessage ?? 'No sentence available'}</div>}
 
       {sentence && (
         <div className="w-100" style={{ maxWidth: 720 }}>
@@ -200,8 +207,8 @@ export default function ReviewView({ token }: { token?: string }) {
               <h2 className="card-title mb-3">{sentence.vietnamese}</h2>
               <div className="mb-3 main-btn-group">
                 <button className="btn btn-outline-primary me-2" onClick={togglePlay}>{playing ? '⏸ Pause' : '▶ Play'}</button>
-                <button className="btn btn-outline-secondary me-2" onClick={() => setshowEN(s => !s)}>{showEN ? 'Hide English' : 'Show English'}</button>
-                <button className="btn btn-success" onClick={finish}>Finish</button>
+                <button className="btn btn-success me-2" onClick={finish}>Finish</button>
+                <button className="btn btn-outline-secondary" onClick={() => setshowEN(s => !s)}>{showEN ? 'Hide English' : 'Show English'}</button>
               </div>
 
               {showEN && <div className="mt-3 text-muted fs-5 show-text-feature">{sentence.english}</div>}
