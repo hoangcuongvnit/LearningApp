@@ -121,7 +121,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
             </thead>
             <tbody>
               {items.map(it => (
-                <tr key={it.id}>
+                <tr key={it.id} className='row-sentence'>
                   <td>
                     <div className="fw-bold">{it.english}</div>
                     <div className="text-muted small">{it.vietnamese}</div>

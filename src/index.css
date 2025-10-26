@@ -23,3 +23,7 @@ body {
   bottom: -50px;
   width: 100%;
 }
+
+.row-sentence .btn {
+  width: auto;
+}
