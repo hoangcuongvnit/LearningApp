@@ -182,6 +182,7 @@ export default function LearnView({ token }: { token?: string }) {
         } else {
           setSentence(ns)
           setShowVN(false)
+          setIsAutoSet(true)
         }
       } catch (err: any) {
         setError(err.message || String(err))

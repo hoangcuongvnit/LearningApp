@@ -187,6 +187,7 @@ export default function ReviewView({ token }: { token?: string }) {
         } else {
           setSentence(ns)
           setshowEN(false)
+          setIsAutoSet(true)
         }
       } catch (err: any) {
         setError(err.message || String(err))
