@@ -3,7 +3,13 @@ import { graphql } from '../utils/api'
 
 type Sentence = { id: string; english: string; vietnamese: string; audioUrl?: string; description?: string; studyCount?: number }
 
-export default function LearnView({ token }: { token?: string }) {
+type LearnViewProps = {
+  token?: string
+  minStudyCount?: number
+  maxStudyCount?: number
+}
+
+export default function LearnView({ token, minStudyCount = 0, maxStudyCount = 5 }: LearnViewProps) {
   const [sentence, setSentence] = useState<Sentence | null>(null)
   const [index, setIndex] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -28,7 +34,7 @@ export default function LearnView({ token }: { token?: string }) {
         audioRef.current = null
       }
     }
-  }, [index, token])
+  }, [index, token, minStudyCount, maxStudyCount])
 
   useEffect(() => {
     if (isAutoSet && sentence) {
@@ -64,8 +70,8 @@ export default function LearnView({ token }: { token?: string }) {
       setUserId(uid)
 
       // request nextStudySentence (Query)
-      const q2 = `query($userId:Int!){ nextStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-      const next = await graphql(q2, { userId: uid }, token)
+      const q2 = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+      const next = await graphql(q2, { userId: uid, minStudyCount, maxStudyCount }, token)
       const ns = next?.nextStudySentence
       if (!ns) {
         // no queued study sentence for this user
@@ -127,8 +133,8 @@ export default function LearnView({ token }: { token?: string }) {
       }
 
       // Fetch next study sentence
-      const query = `query($userId:Int!){ nextStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-      const next = await graphql(query, { userId: uid }, token)
+      const query = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+      const next = await graphql(query, { userId: uid, minStudyCount, maxStudyCount }, token)
       const ns = next?.nextStudySentence
       if (!ns) {
         setSentence(null)
@@ -206,8 +212,8 @@ export default function LearnView({ token }: { token?: string }) {
         await graphql(m1, { userId: uid, sentenceId: sid }, token)
 
         // 2) request next sentence (this is a Query, not a Mutation)
-        const q2 = `query($userId:Int!){ nextStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-        const next = await graphql(q2, { userId: uid }, token)
+        const q2 = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+        const next = await graphql(q2, { userId: uid, minStudyCount, maxStudyCount }, token)
         const ns = next?.nextStudySentence
         if (!ns) {
           // fallback: advance by index if server returned nothing

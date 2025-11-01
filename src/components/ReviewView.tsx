@@ -17,7 +17,7 @@ export default function ReviewView({ token }: { token?: string }) {
 
   useEffect(() => {
     if (index === 0) {
-      // try to fetch server-side reviewStudySentence for this user on first load
+      // try to fetch server-side nextStudySentence for this user on first load
       fetchInitial()
     } else {
       fetchOne(index)
@@ -65,10 +65,10 @@ export default function ReviewView({ token }: { token?: string }) {
       }
       setUserId(uid)
 
-      // request reviewStudySentence (Query)
-      const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-      const next = await graphql(q2, { userId: uid }, token)
-      const ns = next?.reviewStudySentence
+      // request nextStudySentence (Query)
+      const q2 = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+      const next = await graphql(q2, { userId: uid, minStudyCount: 5, maxStudyCount: 10 }, token)
+      const ns = next?.nextStudySentence
       if (!ns) {
         // explicit empty state for review queue
         setSentence(null)
@@ -132,9 +132,9 @@ export default function ReviewView({ token }: { token?: string }) {
       }
 
       // Fetch next review sentence
-      const query = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-      const next = await graphql(query, { userId: uid }, token)
-      const ns = next?.reviewStudySentence
+      const query = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+      const next = await graphql(query, { userId: uid, minStudyCount: 5, maxStudyCount: 10 }, token)
+      const ns = next?.nextStudySentence
       if (!ns) {
         setSentence(null)
         setEmptyMessage('No review sentence available')
@@ -212,9 +212,9 @@ export default function ReviewView({ token }: { token?: string }) {
         await graphql(m1, { userId: uid, sentenceId: sid }, token)
 
         // 2) request next sentence (this is a Query, not a Mutation)
-        const q2 = `query($userId:Int!){ reviewStudySentence(userId:$userId){ id english vietnamese description audioUrl studyCount } }`
-        const next = await graphql(q2, { userId: uid }, token)
-        const ns = next?.reviewStudySentence
+        const q2 = `query($userId:Int!,$minStudyCount:Int,$maxStudyCount:Int){ nextStudySentence(userId:$userId,minStudyCount:$minStudyCount,maxStudyCount:$maxStudyCount){ id english vietnamese description audioUrl studyCount } }`
+        const next = await graphql(q2, { userId: uid, minStudyCount: 5, maxStudyCount: 10 }, token)
+        const ns = next?.nextStudySentence
         if (!ns) {
           // fallback: advance by index if server returned nothing
           setIndex(i => i + 1)

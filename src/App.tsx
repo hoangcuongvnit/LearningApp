@@ -6,12 +6,13 @@ import ReviewView from './components/ReviewView'
 import SentenceList from './components/SentenceList'
 import { getToken, setToken, clearToken, isAuthenticated } from './utils/auth'
 
-type View = 'learn' | 'review' | 'list' | 'create' | 'login'
+type View = 'learn' | 'review' | 'advanced' | 'list' | 'create' | 'login'
 
 export default function App() {
   const [view, setView] = useState<View>('learn')
   const [token, setTokenState] = useState<string | null>(getToken())
   const [editingSentence, setEditingSentence] = useState<{ id?: string; english?: string; vietnamese?: string } | null>(null)
+  const [navbarCollapsed, setNavbarCollapsed] = useState(true)
 
   useEffect(() => {
     setTokenState(getToken())
@@ -34,6 +35,11 @@ export default function App() {
     setView('create')
   }
 
+  function handleNavClick(newView: View) {
+    setView(newView)
+    setNavbarCollapsed(true)
+  }
+
   if (!isAuthenticated()) {
     return (
       <div className="container py-5">
@@ -46,24 +52,33 @@ export default function App() {
     <div>
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container">
-          <a className="navbar-brand" href="#">Learning</a>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+          <a className="navbar-brand" href="#" onClick={() => handleNavClick('learn')}>
+            <img src="/logo.png" alt="Learning App" style={{ height: '40px' }} />
+          </a>
+          <button 
+            className="navbar-toggler" 
+            type="button" 
+            onClick={() => setNavbarCollapsed(!navbarCollapsed)}
+            aria-controls="nav" 
+            aria-expanded={!navbarCollapsed} 
+            aria-label="Toggle navigation"
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse" id="nav">
+          <div className={`collapse navbar-collapse ${!navbarCollapsed ? 'show' : ''}`} id="nav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <button className={`nav-link btn btn-link ${view === 'learn' ? 'active' : ''}`} onClick={() => setView('learn')}>Learn</button>
+                <button className={`nav-link btn btn-link ${view === 'review' ? 'active' : ''}`} onClick={() => handleNavClick('review')}>Review</button>
               </li>
               <li className="nav-item">
-                <button className={`nav-link btn btn-link ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>Sentences</button>
+                <button className={`nav-link btn btn-link ${view === 'advanced' ? 'active' : ''}`} onClick={() => handleNavClick('advanced')}>Advanced</button>
               </li>
               <li className="nav-item">
-                <button className={`nav-link btn btn-link ${view === 'create' ? 'active' : ''}`} onClick={() => setView('create')}>Create</button>
+                <button className={`nav-link btn btn-link ${view === 'list' ? 'active' : ''}`} onClick={() => handleNavClick('list')}>Sentences</button>
               </li>
               <li className="nav-item">
-                <button className={`nav-link btn btn-link ${view === 'review' ? 'active' : ''}`} onClick={() => setView('review')}>Review</button>
+                <button className={`nav-link btn btn-link ${view === 'create' ? 'active' : ''}`} onClick={() => handleNavClick('create')}>Create</button>
               </li>
             </ul>
 
@@ -102,7 +117,7 @@ export default function App() {
         )}
 
         {view === 'learn' && (
-          <LearnView token={token ?? ''} />
+          <LearnView token={token ?? ''} minStudyCount={0} maxStudyCount={5} />
         )}
 
         {view === 'list' && (
@@ -111,6 +126,10 @@ export default function App() {
 
         {view === 'review' && (
           <ReviewView token={token ?? ''} />
+        )}
+
+        {view === 'advanced' && (
+          <LearnView token={token ?? ''} minStudyCount={11} maxStudyCount={25} />
         )}
       </main>
     </div>
