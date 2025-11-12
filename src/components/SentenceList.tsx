@@ -174,11 +174,11 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h3 className="m-0">Sentences</h3>
         <button 
-          className="btn btn-primary" 
+          className="btn btn-secondary" 
           onClick={() => generateMissingFields()}
           disabled={generating}
         >
-          {generating ? 'Generating...' : 'Generate Missing Fields'}
+          {generating ? 'Generating...' : 'Generate Missing'}
         </button>
         <div className="text-muted">Total: {total}</div>
       </div>
