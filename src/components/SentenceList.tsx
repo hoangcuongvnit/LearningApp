@@ -15,17 +15,19 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
   const [playingId, setPlayingId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [generating, setGenerating] = useState(false)
+  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
 
   useEffect(() => {
     fetchPage(page)
-  }, [page])
+  }, [page, search])
 
   async function fetchPage(p: number) {
     setLoading(true)
     setError(null)
     try {
-      const query = `query($limit:Int,$offset:Int){ sentences(limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl studyCount } total } }`
-      const variables = { limit: pageSize, offset: (p - 1) * pageSize }
+      const query = `query($search:String,$limit:Int,$offset:Int){ sentences(search:$search,limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl studyCount } total } }`
+      const variables = { search: search || undefined, limit: pageSize, offset: (p - 1) * pageSize }
       const data = await graphql(query, variables, token)
       setItems(data.sentences.items)
       setTotal(data.sentences.total)
@@ -153,6 +155,18 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     }
   }
 
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    setSearch(searchInput)
+    setPage(1) // Reset to first page when searching
+  }
+
+  function handleClearSearch() {
+    setSearchInput('')
+    setSearch('')
+    setPage(1)
+  }
+
   const pages = Math.max(1, Math.ceil(total / pageSize))
 
   return (
@@ -168,6 +182,27 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
         </button>
         <div className="text-muted">Total: {total}</div>
       </div>
+
+      {/* Search Form */}
+      <form onSubmit={handleSearch} className="mb-3">
+        <div className="input-group">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search sentences..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary">
+            Search
+          </button>
+          {search && (
+            <button type="button" className="btn btn-outline-secondary" onClick={handleClearSearch}>
+              Clear
+            </button>
+          )}
+        </div>
+      </form>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
