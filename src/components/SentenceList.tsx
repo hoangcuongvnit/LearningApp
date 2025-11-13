@@ -26,7 +26,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     setLoading(true)
     setError(null)
     try {
-      const query = `query($search:String,$limit:Int,$offset:Int){ sentences(search:$search,limit:$limit,offset:$offset){ items{ id english vietnamese audioUrl studyCount } total } }`
+      const query = `query($search:String,$limit:Int,$offset:Int){ sentences(search:$search,limit:$limit,offset:$offset){ items{ id english vietnamese description audioUrl studyCount } total } }`
       const variables = { search: search || undefined, limit: pageSize, offset: (p - 1) * pageSize }
       const data = await graphql(query, variables, token)
       setItems(data.sentences.items)

@@ -57,11 +57,19 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
   const title = initial && initial.id ? 'Edit Sentence' : 'Create Sentence'
 
   return (
-    <div className="card mx-auto" style={{ maxWidth: 720 }}>
-      <div className="card-body">
-        <h5 className="card-title">{title}</h5>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <form onSubmit={submit}>
+    <>
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner-border text-light" role="status" style={{ width: '3rem', height: '3rem' }}>
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
+      <div className="card mx-auto" style={{ maxWidth: 720 }}>
+        <div className="card-body">
+          <h5 className="card-title">{title}</h5>
+          {error && <div className="alert alert-danger">{error}</div>}
+          <form onSubmit={submit}>
           <div className="mb-3">
             <label className="form-label">English</label>
             <input className="form-control" value={english} onChange={e => setEnglish(e.target.value)} required />
@@ -78,11 +86,11 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
             <label className="form-label">Voice</label>
             <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
               <option value="">Random</option>
-              <option value="alloy">alloy — Balanced, natural, and calm</option>
-              <option value="verse">verse — Warm and expressive</option>
-              <option value="coral">coral — Friendly and upbeat</option>
-              <option value="sage">sage — Deep and serious</option>
-              <option value="lumen">lumen — Bright and clear</option>
+              <option value="alloy">alloy — Cân bằng, tự nhiên và bình tĩnh</option>
+              <option value="verse">verse — Ấm áp và biểu cảm</option>
+              <option value="coral">coral — Thân thiện và lạc quan</option>
+              <option value="sage">sage — Sâu sắc và nghiêm túc</option>
+              <option value="lumen">lumen — Sáng và rõ ràng</option>
               <option value="ember">ember — Soft and gentle</option>
             </select>
           </div>
@@ -93,5 +101,6 @@ export default function CreateSentenceForm({ token, onSuccess, initial }: { toke
         </form>
       </div>
     </div>
+    </>
   )
 }
