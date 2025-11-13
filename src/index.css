@@ -52,6 +52,12 @@ body {
   line-height: 1.6;
 }
 
+.description-data img {
+  max-width: 350px !important;
+  margin: auto;
+  display: block;
+}
+
 @media (max-width: 768px) {
   .description-data {
     max-height: calc(100vh - 450px);
