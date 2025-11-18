@@ -10,6 +10,7 @@ interface CreateSentenceDto {
   audioUrl?: string
   transcription?: string
   tagIds?: number[]
+  voice?: string
 }
 
 interface SentenceResponseDto {
@@ -48,6 +49,7 @@ export default function CreateSentenceForm({
   const [vietnamese, setVietnamese] = useState(initial?.vietnamese ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [transcription, setTranscription] = useState(initial?.transcription ?? '')
+  const [voice, setVoice] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -57,6 +59,7 @@ export default function CreateSentenceForm({
     setVietnamese(initial?.vietnamese ?? '')
     setDescription(initial?.description ?? '')
     setTranscription(initial?.transcription ?? '')
+    setVoice('')
   }, [initial])
 
   async function submit(e: React.FormEvent) {
@@ -77,7 +80,8 @@ export default function CreateSentenceForm({
         language: language.trim(),
         vietnamese: vietnamese.trim() || undefined,
         description: description.trim() || undefined,
-        transcription: transcription.trim() || undefined
+        transcription: transcription.trim() || undefined,
+        voice: voice.trim() || undefined
       }
 
       if (initial && initial.id) {
@@ -92,6 +96,7 @@ export default function CreateSentenceForm({
         setVietnamese('')
         setDescription('')
         setTranscription('')
+        setVoice('')
       }
 
       if (onSuccess) onSuccess()
@@ -168,6 +173,18 @@ export default function CreateSentenceForm({
                 onChange={e => setTranscription(e.target.value)} 
                 placeholder="Auto-generated if not provided"
               />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Voice</label>
+              <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
+                <option value="">Random</option>
+                <option value="alloy">alloy — Cân bằng, tự nhiên và bình tĩnh</option>
+                <option value="verse">verse — Ấm áp và biểu cảm</option>
+                <option value="coral">coral — Thân thiện và lạc quan</option>
+                <option value="sage">sage — Sâu sắc và nghiêm túc</option>
+                <option value="lumen">lumen — Sáng và rõ ràng</option>
+                <option value="ember">ember — Soft and gentle</option>
+              </select>
             </div>
             <div className="d-flex gap-2">
               <button className="btn btn-success" disabled={loading}>
