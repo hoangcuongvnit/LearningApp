@@ -24,7 +24,10 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
     // Cleanup on unmount
     return () => {
       if (audioRef.current) {
-        try { audioRef.current.pause() } catch { }
+        try { 
+          audioRef.current.pause()
+          audioRef.current.onended = null
+        } catch { }
         audioRef.current = null
       }
       if (nextSentenceTimerRef.current) {
