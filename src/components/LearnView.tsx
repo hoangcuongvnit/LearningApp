@@ -183,7 +183,7 @@ export default function LearnView({ token, minStudyCount = 0, maxStudyCount = 5 
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
-                backgroundColor: sentence.imageUrl ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
+                backgroundColor: sentence.imageUrl ? 'rgb(255 255 255 / 45%)' : 'transparent',
                 backgroundBlendMode: sentence.imageUrl ? 'lighten' : 'normal'
               }}
             >

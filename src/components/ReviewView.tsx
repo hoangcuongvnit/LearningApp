@@ -181,7 +181,7 @@ export default function ReviewView({ token }: { token?: string }) {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
-                backgroundColor: sentence.imageUrl ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
+                backgroundColor: sentence.imageUrl ? 'rgb(255 255 255 / 45%)' : 'transparent',
                 backgroundBlendMode: sentence.imageUrl ? 'lighten' : 'normal'
               }}
             >
