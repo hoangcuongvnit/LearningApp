@@ -10,9 +10,26 @@ async function handleResponse<T>(res: Response): Promise<T> {
     let errorMessage = `HTTP ${res.status}: ${res.statusText}`
     try {
       const errorData = await res.json()
-      if (errorData.message) errorMessage = errorData.message
-      else if (errorData.errors) errorMessage = JSON.stringify(errorData.errors)
-      else if (errorData.title) errorMessage = errorData.title
+      if (errorData.message) {
+        errorMessage = errorData.message
+      } else if (errorData.errors) {
+        // Handle validation errors object
+        const errors = errorData.errors
+        const errorMessages = Object.keys(errors).map(key => {
+          const messages = Array.isArray(errors[key]) ? errors[key].join(', ') : errors[key]
+          return `${key}: ${messages}`
+        })
+        errorMessage = errorMessages.join(' | ')
+      } else if (errorData.title) {
+        errorMessage = errorData.title
+        // Include detail if available
+        if (errorData.detail) {
+          errorMessage += `: ${errorData.detail}`
+        }
+      } else {
+        // Fallback: stringify the entire error object
+        errorMessage = JSON.stringify(errorData)
+      }
     } catch {
       // If parsing fails, use the default error message
     }

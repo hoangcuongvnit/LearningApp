@@ -64,12 +64,20 @@ export default function CreateSentenceForm({
     setLoading(true)
     setError(null)
     try {
+      // Validate required fields
+      if (!original.trim()) {
+        throw new Error('Original text is required')
+      }
+      if (!language.trim()) {
+        throw new Error('Language is required')
+      }
+
       const body: CreateSentenceDto = {
-        original,
-        language,
-        vietnamese: vietnamese || undefined,
-        description: description || undefined,
-        transcription: transcription || undefined
+        original: original.trim(),
+        language: language.trim(),
+        vietnamese: vietnamese.trim() || undefined,
+        description: description.trim() || undefined,
+        transcription: transcription.trim() || undefined
       }
 
       if (initial && initial.id) {
@@ -88,6 +96,7 @@ export default function CreateSentenceForm({
 
       if (onSuccess) onSuccess()
     } catch (err: any) {
+      console.error('Sentence creation/update error:', err)
       setError(err.message || String(err))
     } finally {
       setLoading(false)
