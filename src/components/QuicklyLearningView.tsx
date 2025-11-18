@@ -15,6 +15,7 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
   const [error, setError] = useState<string | null>(null)
   const [playing, setPlaying] = useState(false)
   const [playCount, setPlayCount] = useState(0)
+  const playCountRef = useRef(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const nextSentenceTimerRef = useRef<number | null>(null)
 
@@ -42,6 +43,7 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
     setError(null)
     setPlaying(false)
     setPlayCount(0)
+    playCountRef.current = 0
     
     // Clear any existing timer
     if (nextSentenceTimerRef.current) {
@@ -118,10 +120,10 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
       setPlaying(false)
       audioRef.current = null
       
-      const currentPlayCount = playCount + 1
-      setPlayCount(currentPlayCount)
+      playCountRef.current = playCountRef.current + 1
+      setPlayCount(playCountRef.current)
       
-      if (currentPlayCount < 2) {
+      if (playCountRef.current < 2) {
         // Play again for the second time
         setTimeout(() => {
           playAudioAutomatically(sent)
