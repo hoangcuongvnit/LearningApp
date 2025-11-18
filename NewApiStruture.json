@@ -1,0 +1,1424 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Aznetbe Language Learning API",
+    "description": "A comprehensive API for language learning with AI-powered content generation including translations, audio, and images.",
+    "contact": {
+      "name": "Aznetbe Team",
+      "email": "admin@aznetbe.com"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/api/Account/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register new user",
+        "description": "Creates a new user account with the User role and returns a JWT token",
+        "operationId": "RegisterUser",
+        "requestBody": {
+          "description": "User registration details including email, password, and phone number",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid registration data or user already exists"
+          }
+        }
+      }
+    },
+    "/api/Account/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login user",
+        "description": "Authenticates a user and returns a JWT token valid for 7 days",
+        "operationId": "LoginUser",
+        "requestBody": {
+          "description": "User credentials (email and password)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User authenticated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid login data"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/Account/set-role": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Set user role",
+        "description": "Allows admin to assign User or Admin role to any user. Removes all existing roles first.",
+        "operationId": "SetUserRole",
+        "requestBody": {
+          "description": "User email and role to assign",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRoleDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRoleDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role assigned successfully"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "403": {
+            "description": "User not authorized (Admin role required)"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "aznetbe"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Sentences": {
+      "get": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Get all sentences (Admin only)",
+        "description": "Retrieves all sentences with pagination and optional language filtering. Admin only.",
+        "operationId": "GetAllSentences",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Items per page (default: 10, max: 100)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Filter by language (English or Korean). Leave empty for all languages.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of sentences retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentenceResponseDtoPagedResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "403": {
+            "description": "User not authorized (Admin role required)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Create new sentence",
+        "description": "Creates a new sentence with AI-generated Vietnamese translation, description, audio, image, and transcription",
+        "operationId": "CreateSentence",
+        "requestBody": {
+          "description": "Sentence creation data. Only Original text and Language are required; Vietnamese translation, description, audio, image, and transcription will be auto-generated if not provided",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sentence created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentenceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data or missing AI configuration"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "500": {
+            "description": "Error during sentence creation"
+          }
+        }
+      }
+    },
+    "/api/Sentences/my-sentences": {
+      "get": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Get my sentences",
+        "description": "Retrieves all sentences the user is learning from UserLearning table with pagination and optional language filtering",
+        "operationId": "GetMySentences",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Items per page (default: 10, max: 100)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Filter by language (English or Korean). Leave empty for all languages.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's sentences retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentenceResponseDtoPagedResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          }
+        }
+      }
+    },
+    "/api/Sentences/{id}": {
+      "get": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Get sentence by ID",
+        "description": "Retrieves a single sentence with all its details including translations, media, and tags",
+        "operationId": "GetSentenceById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The sentence ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sentence retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentenceResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "Sentence not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Update sentence",
+        "description": "Updates an existing sentence and regenerates missing content using AI services. Admin only.",
+        "operationId": "UpdateSentence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The sentence ID to update",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated sentence data. Missing fields will be auto-generated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSentenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sentence updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentenceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "403": {
+            "description": "User not authorized (Admin role required)"
+          },
+          "404": {
+            "description": "Sentence not found"
+          },
+          "500": {
+            "description": "Error during sentence update"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Sentences"
+        ],
+        "summary": "Delete sentence",
+        "description": "Permanently deletes a sentence. Admin only.",
+        "operationId": "DeleteSentence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The sentence ID to delete",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sentence deleted successfully"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "403": {
+            "description": "User not authorized (Admin role required)"
+          },
+          "404": {
+            "description": "Sentence not found"
+          }
+        }
+      }
+    },
+    "/api/UserLearning/review/{sentenceId}": {
+      "post": {
+        "tags": [
+          "Learning Progress"
+        ],
+        "summary": "Review sentence (legacy)",
+        "description": "Increments learning count for a sentence. Creates new record if first review.",
+        "operationId": "ReviewSentence",
+        "parameters": [
+          {
+            "name": "sentenceId",
+            "in": "path",
+            "description": "The sentence ID to review",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLearning"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "Sentence not found"
+          }
+        }
+      }
+    },
+    "/api/UserLearning/finish/{sentenceId}": {
+      "post": {
+        "tags": [
+          "Learning Progress"
+        ],
+        "summary": "Finish learning sentence",
+        "description": "Increments learning count by 1 when user finishes learning a sentence. Creates new record if this is the first time.",
+        "operationId": "FinishLearningSentence",
+        "parameters": [
+          {
+            "name": "sentenceId",
+            "in": "path",
+            "description": "The sentence ID that was learned",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Learning progress updated"
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "Sentence not found"
+          }
+        }
+      }
+    },
+    "/api/UserLearning/get-by-count": {
+      "post": {
+        "tags": [
+          "Learning Progress"
+        ],
+        "summary": "Get sentence by learning count",
+        "description": "Returns a random sentence where minCount &lt; learningCount &lt;= maxCount, supporting spaced repetition workflow with optional language filtering",
+        "operationId": "GetRandomSentenceByCount",
+        "requestBody": {
+          "description": "Learning count range filter with optional language filter (minCount < learningCount <= maxCount)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSentenceByLearningCountDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSentenceByLearningCountDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSentenceByLearningCountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Random sentence retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLearningSentenceDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "No sentences found in specified range"
+          },
+          "500": {
+            "description": "Error retrieving sentence"
+          }
+        }
+      }
+    },
+    "/api/UserLearning": {
+      "get": {
+        "tags": [
+          "Learning Progress"
+        ],
+        "summary": "Get learning progress",
+        "description": "Retrieves all sentences the user is learning with learning count and last review date, with optional language filtering",
+        "operationId": "GetUserLearning",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Items per page (default: 10, max: 100)",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Filter by language (English or Korean). Leave empty for all languages.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Learning progress retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLearningSentenceDtoPagedResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          }
+        }
+      }
+    },
+    "/api/UserLearning/next": {
+      "get": {
+        "tags": [
+          "Learning Progress"
+        ],
+        "summary": "Get next sentence to practice",
+        "description": "Returns the sentence with the lowest learning count. Updates LastReviewed timestamp.",
+        "operationId": "GetNextSentence",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Filter by language (English or Korean). Leave empty for all languages.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Next sentence retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NextSentenceDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not authenticated"
+          },
+          "404": {
+            "description": "No sentences found"
+          },
+          "500": {
+            "description": "Error retrieving sentence"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplicationUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sentencesToLearn": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sentence"
+            },
+            "nullable": true
+          },
+          "learningProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLearning"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "User email address",
+            "nullable": true,
+            "example": "user@example.com"
+          },
+          "token": {
+            "type": "string",
+            "description": "JWT Bearer token (valid for 7 days)",
+            "nullable": true,
+            "example": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
+          },
+          "role": {
+            "type": "string",
+            "description": "Assigned user role",
+            "nullable": true,
+            "example": "User"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Authentication response containing JWT token"
+      },
+      "CreateSentenceDto": {
+        "required": [
+          "language",
+          "original"
+        ],
+        "type": "object",
+        "properties": {
+          "original": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Original sentence text (required)",
+            "example": "Hello, how are you?"
+          },
+          "language": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Language of the original sentence (English or Korean)",
+            "example": "English"
+          },
+          "vietnamese": {
+            "type": "string",
+            "description": "Vietnamese translation (auto-generated if not provided)",
+            "nullable": true,
+            "example": "Xin chào, bạn khỏe không?"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description with meaning and alternatives (auto-generated if not provided)",
+            "nullable": true,
+            "example": "A common greeting phrase used to ask about someone's well-being."
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "URL to sentence illustration image (auto-generated using AI if not provided)",
+            "nullable": true,
+            "example": "/images/sentences/hello.png"
+          },
+          "audioUrl": {
+            "type": "string",
+            "description": "URL to audio pronunciation file (auto-generated using TTS if not provided)",
+            "nullable": true,
+            "example": "/audio/sentences/hello.mp3"
+          },
+          "transcription": {
+            "type": "string",
+            "description": "Phonetic transcription (auto-generated if not provided)",
+            "nullable": true,
+            "example": "həˈloʊ, haʊ ɑːr juː"
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "List of tag IDs to associate with this sentence",
+            "nullable": true,
+            "example": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request data for creating or updating a sentence"
+      },
+      "GetSentenceByLearningCountDto": {
+        "type": "object",
+        "properties": {
+          "minCount": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Minimum learning count (exclusive)",
+            "format": "int32",
+            "example": 0
+          },
+          "maxCount": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "description": "Maximum learning count (inclusive)",
+            "format": "int32",
+            "example": 3
+          },
+          "language": {
+            "type": "string",
+            "description": "Filter by language (English or Korean). Leave empty for all languages.",
+            "nullable": true,
+            "example": "English"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to filter sentences by learning count range"
+      },
+      "LoginDto": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "User email address",
+            "format": "email",
+            "example": "admin@aznetbe.com"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string",
+            "description": "User password",
+            "example": "Admin@123"
+          }
+        },
+        "additionalProperties": false,
+        "description": "User login credentials"
+      },
+      "NextSentenceDto": {
+        "type": "object",
+        "properties": {
+          "sentenceId": {
+            "type": "string",
+            "description": "Sentence unique identifier",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "original": {
+            "type": "string",
+            "description": "Original sentence text",
+            "nullable": true,
+            "example": "Hello, how are you?"
+          },
+          "audioUrl": {
+            "type": "string",
+            "description": "Audio URL",
+            "nullable": true,
+            "example": "/audio/sentences/hello.mp3"
+          },
+          "transcription": {
+            "type": "string",
+            "description": "Phonetic transcription",
+            "nullable": true,
+            "example": "həˈloʊ, haʊ ɑːr juː"
+          },
+          "lastReviewed": {
+            "type": "string",
+            "description": "Last review timestamp",
+            "format": "date-time",
+            "example": "2025-01-17T10:30:00Z"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for the next sentence to practice"
+      },
+      "RegisterDto": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "User email address (used as username)",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "password": {
+            "minLength": 6,
+            "type": "string",
+            "description": "User password (minimum 6 characters, requires uppercase, lowercase, digit, and special character)",
+            "example": "Pass@123"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "User phone number (optional)",
+            "nullable": true,
+            "example": "+1234567890"
+          }
+        },
+        "additionalProperties": false,
+        "description": "User registration request data"
+      },
+      "Sentence": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "original": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "vietnamese": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "audioUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "transcription": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            },
+            "nullable": true
+          },
+          "vocabularies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Vocabulary"
+            },
+            "nullable": true
+          },
+          "usersToLearn": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationUser"
+            },
+            "nullable": true
+          },
+          "learningProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLearning"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SentenceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique sentence identifier",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "original": {
+            "type": "string",
+            "description": "Original sentence text",
+            "nullable": true,
+            "example": "Hello, how are you?"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the original sentence",
+            "nullable": true,
+            "example": "English"
+          },
+          "vietnamese": {
+            "type": "string",
+            "description": "Vietnamese translation",
+            "nullable": true,
+            "example": "Xin chào, bạn khỏe không?"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description with meaning",
+            "nullable": true,
+            "example": "A common greeting phrase used to ask about someone's well-being."
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "URL to sentence illustration image",
+            "nullable": true,
+            "example": "/images/sentences/hello.png"
+          },
+          "audioUrl": {
+            "type": "string",
+            "description": "URL to audio pronunciation file",
+            "nullable": true,
+            "example": "/audio/sentences/hello.mp3"
+          },
+          "transcription": {
+            "type": "string",
+            "description": "Phonetic transcription",
+            "nullable": true,
+            "example": "həˈloʊ, haʊ ɑːr juː"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated tag names",
+            "nullable": true,
+            "example": [
+              "Greetings",
+              "Life"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp",
+            "format": "date-time",
+            "example": "2025-11-16T10:30:00Z"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sentence response with all details"
+      },
+      "SentenceResponseDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Current page number",
+            "format": "int32",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of items per page",
+            "format": "int32",
+            "example": 10
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of items across all pages",
+            "format": "int32",
+            "example": 45
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages",
+            "format": "int32",
+            "example": 5
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SentenceResponseDto"
+            },
+            "description": "Items for the current page",
+            "nullable": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "description": "Whether there is a previous page",
+            "readOnly": true,
+            "example": false
+          },
+          "hasNext": {
+            "type": "boolean",
+            "description": "Whether there is a next page",
+            "readOnly": true,
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Paginated response wrapper"
+      },
+      "SetUserRoleDto": {
+        "required": [
+          "email",
+          "role"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "User email address",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "role": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Role to assign (User, Admin, or Guest)",
+            "example": "User"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to set user role"
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sentence"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserLearning": {
+        "type": "object",
+        "properties": {
+          "applicationUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/ApplicationUser"
+          },
+          "sentenceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sentence": {
+            "$ref": "#/components/schemas/Sentence"
+          },
+          "learningCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastReviewed": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserLearningSentenceDto": {
+        "type": "object",
+        "properties": {
+          "sentenceId": {
+            "type": "string",
+            "description": "Sentence unique identifier",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "original": {
+            "type": "string",
+            "description": "Original sentence text",
+            "nullable": true,
+            "example": "Hello, how are you?"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of the original sentence",
+            "nullable": true,
+            "example": "English"
+          },
+          "vietnamese": {
+            "type": "string",
+            "description": "Vietnamese translation",
+            "nullable": true,
+            "example": "Xin chào, bạn khỏe không?"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description",
+            "nullable": true,
+            "example": "A common greeting phrase"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Image URL",
+            "nullable": true,
+            "example": "/images/sentences/hello.png"
+          },
+          "audioUrl": {
+            "type": "string",
+            "description": "Audio URL",
+            "nullable": true,
+            "example": "/audio/sentences/hello.mp3"
+          },
+          "transcription": {
+            "type": "string",
+            "description": "Phonetic transcription",
+            "nullable": true,
+            "example": "həˈloʊ, haʊ ɑːr juː"
+          },
+          "learningCount": {
+            "type": "integer",
+            "description": "Number of times user has reviewed this sentence",
+            "format": "int32",
+            "example": 3
+          },
+          "lastReviewed": {
+            "type": "string",
+            "description": "Last review timestamp",
+            "format": "date-time",
+            "example": "2025-11-16T10:30:00Z"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated tag names",
+            "nullable": true,
+            "example": [
+              "Greetings",
+              "Life"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sentence with user learning progress"
+      },
+      "UserLearningSentenceDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Current page number",
+            "format": "int32",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of items per page",
+            "format": "int32",
+            "example": 10
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of items across all pages",
+            "format": "int32",
+            "example": 45
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages",
+            "format": "int32",
+            "example": 5
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLearningSentenceDto"
+            },
+            "description": "Items for the current page",
+            "nullable": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "description": "Whether there is a previous page",
+            "readOnly": true,
+            "example": false
+          },
+          "hasNext": {
+            "type": "boolean",
+            "description": "Whether there is a next page",
+            "readOnly": true,
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Paginated response wrapper"
+      },
+      "Vocabulary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "word": {
+            "type": "string",
+            "nullable": true
+          },
+          "transcription": {
+            "type": "string",
+            "nullable": true
+          },
+          "audioUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Sentence"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

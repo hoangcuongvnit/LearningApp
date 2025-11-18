@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import LoginForm from './components/LoginForm'
+import RegisterForm from './components/RegisterForm'
 import CreateSentenceForm from './components/CreateSentenceForm'
 import LearnView from './components/LearnView'
 import ReviewView from './components/ReviewView'
+import QuicklyLearningView from './components/QuicklyLearningView'
 import SentenceList from './components/SentenceList'
 import { getToken, setToken, clearToken, isAuthenticated } from './utils/auth'
 
-type View = 'learn' | 'review' | 'advanced' | 'list' | 'create' | 'login'
+type View = 'learn' | 'review' | 'advanced' | 'quickly' | 'list' | 'create' | 'login' | 'register'
 
 export default function App() {
   const [view, setView] = useState<View>('learn')
   const [token, setTokenState] = useState<string | null>(getToken())
-  const [editingSentence, setEditingSentence] = useState<{ id?: string; english?: string; vietnamese?: string } | null>(null)
+  const [editingSentence, setEditingSentence] = useState<{ 
+    id?: string
+    original?: string
+    language?: string
+    vietnamese?: string 
+  } | null>(null)
   const [navbarCollapsed, setNavbarCollapsed] = useState(true)
 
   useEffect(() => {
@@ -24,13 +31,24 @@ export default function App() {
     setView('learn')
   }
 
+  function onRegister(newToken: string) {
+    setToken(newToken)
+    setTokenState(newToken)
+    setView('learn')
+  }
+
   function onLogout() {
     clearToken()
     setTokenState(null)
     setView('login')
   }
 
-  function handleEditSentence(s: { id?: string; english?: string; vietnamese?: string }) {
+  function handleEditSentence(s: { 
+    id?: string
+    original?: string
+    language?: string
+    vietnamese?: string 
+  }) {
     setEditingSentence(s)
     setView('create')
   }
@@ -43,7 +61,17 @@ export default function App() {
   if (!isAuthenticated()) {
     return (
       <div className="container py-5">
-        <LoginForm onLogin={onLogin} />
+        {view === 'register' ? (
+          <RegisterForm 
+            onRegister={onRegister} 
+            onSwitchToLogin={() => setView('login')} 
+          />
+        ) : (
+          <LoginForm 
+            onLogin={onLogin} 
+            onSwitchToRegister={() => setView('register')} 
+          />
+        )}
       </div>
     )
   }
@@ -68,6 +96,9 @@ export default function App() {
 
           <div className={`collapse navbar-collapse ${!navbarCollapsed ? 'show' : ''}`} id="nav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <button className={`nav-link btn btn-link ${view === 'quickly' ? 'active' : ''}`} onClick={() => handleNavClick('quickly')}>Quickly</button>
+              </li>
               <li className="nav-item">
                 <button className={`nav-link btn btn-link ${view === 'review' ? 'active' : ''}`} onClick={() => handleNavClick('review')}>Review</button>
               </li>
@@ -96,7 +127,19 @@ export default function App() {
       </nav>
 
       <main className="container py-4">
-        {view === 'login' && <LoginForm onLogin={onLogin} />}
+        {view === 'login' && (
+          <LoginForm 
+            onLogin={onLogin} 
+            onSwitchToRegister={() => setView('register')} 
+          />
+        )}
+
+        {view === 'register' && (
+          <RegisterForm 
+            onRegister={onRegister} 
+            onSwitchToLogin={() => setView('login')} 
+          />
+        )}
 
         {view === 'create' && (
           <CreateSentenceForm
@@ -118,6 +161,10 @@ export default function App() {
 
         {view === 'learn' && (
           <LearnView token={token ?? ''} minStudyCount={0} maxStudyCount={5} />
+        )}
+
+        {view === 'quickly' && (
+          <QuicklyLearningView token={token ?? ''} />
         )}
 
         {view === 'list' && (

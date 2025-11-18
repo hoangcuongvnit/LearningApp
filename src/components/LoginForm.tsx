@@ -1,9 +1,26 @@
 import React, { useState } from 'react'
-import { graphql } from '../utils/api'
+import { post } from '../utils/api'
 import { setToken } from '../utils/auth'
 
-export default function LoginForm({ onLogin }: { onLogin: (token: string) => void }) {
-  const [username, setUsername] = useState('')
+interface LoginDto {
+  email: string
+  password: string
+}
+
+interface AuthResponseDto {
+  email: string
+  token: string
+  role: string
+}
+
+export default function LoginForm({ 
+  onLogin,
+  onSwitchToRegister
+}: { 
+  onLogin: (token: string) => void
+  onSwitchToRegister?: () => void
+}) {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -13,11 +30,11 @@ export default function LoginForm({ onLogin }: { onLogin: (token: string) => voi
     setLoading(true)
     setError(null)
     try {
-      const query = `mutation($u:String!,$p:String!){ login(username:$u,password:$p){ token user{ id username } } }`
-      const data = await graphql(query, { u: username, p: password })
-  const token = data.login.token
-  setToken(token)
-  onLogin(token)
+      const body: LoginDto = { email, password }
+      const data = await post<AuthResponseDto>('/api/Account/login', body)
+      const token = data.token
+      setToken(token)
+      onLogin(token)
     } catch (err: any) {
       setError(err.message || String(err))
     } finally {
@@ -32,14 +49,40 @@ export default function LoginForm({ onLogin }: { onLogin: (token: string) => voi
         {error && <div className="alert alert-danger">{error}</div>}
         <form onSubmit={submit}>
           <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input className="form-control" value={username} onChange={e => setUsername(e.target.value)} />
+            <label className="form-label">Email</label>
+            <input 
+              type="email" 
+              className="form-control" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              required 
+            />
           </div>
           <div className="mb-3">
             <label className="form-label">Password</label>
-            <input type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} />
+            <input 
+              type="password" 
+              className="form-control" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              required 
+            />
           </div>
-          <button className="btn btn-primary" disabled={loading}>{loading ? 'Logging...' : 'Login'}</button>
+          <div className="d-grid gap-2">
+            <button className="btn btn-primary" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+            {onSwitchToRegister && (
+              <button 
+                type="button" 
+                className="btn btn-link" 
+                onClick={onSwitchToRegister}
+                disabled={loading}
+              >
+                Don't have an account? Sign Up
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>
