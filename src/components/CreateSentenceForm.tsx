@@ -178,12 +178,12 @@ export default function CreateSentenceForm({
               <label className="form-label">Voice</label>
               <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
                 <option value="">Random</option>
-                <option value="alloy">alloy — Cân bằng, tự nhiên và bình tĩnh</option>
-                <option value="verse">verse — Ấm áp và biểu cảm</option>
-                <option value="coral">coral — Thân thiện và lạc quan</option>
-                <option value="sage">sage — Sâu sắc và nghiêm túc</option>
-                <option value="lumen">lumen — Sáng và rõ ràng</option>
-                <option value="ember">ember — Soft and gentle</option>
+                <option value="alloy">neutral</option>
+                <option value="ash">lively</option>
+                <option value="coral">warm</option>
+                <option value="edge">clear</option>
+                <option value="linear">neutral</option>
+                <option value="verse">smooth</option>
               </select>
             </div>
             <div className="d-flex gap-2">
