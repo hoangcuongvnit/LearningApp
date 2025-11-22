@@ -179,11 +179,11 @@ export default function CreateSentenceForm({
               <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
                 <option value="">Random</option>
                 <option value="alloy">neutral</option>
-                <option value="ash">lively</option>
-                <option value="coral">warm</option>
-                <option value="edge">clear</option>
-                <option value="linear">neutral</option>
-                <option value="verse">smooth</option>
+                <option value="echo">lively</option>
+                <option value="fable">warm</option>
+                <option value="onyx">clear</option>
+                <option value="nova">neutral</option>
+                <option value="shimmer">smooth</option>
               </select>
             </div>
             <div className="d-flex gap-2">
