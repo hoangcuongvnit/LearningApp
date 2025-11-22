@@ -152,7 +152,7 @@ export default function CreateSentenceForm({
                 className="form-control" 
                 value={vietnamese} 
                 onChange={e => setVietnamese(e.target.value)} 
-                placeholder="Auto-generated if not provided"
+                placeholder=""
               />
             </div>
             <div className="mb-3">
@@ -162,7 +162,7 @@ export default function CreateSentenceForm({
                 value={description} 
                 onChange={e => setDescription(e.target.value)} 
                 rows={3}
-                placeholder="Auto-generated if not provided"
+                placeholder=""
               />
             </div>
             <div className="mb-3">
@@ -171,7 +171,7 @@ export default function CreateSentenceForm({
                 className="form-control" 
                 value={transcription} 
                 onChange={e => setTranscription(e.target.value)} 
-                placeholder="Auto-generated if not provided"
+                placeholder=""
               />
             </div>
             <div className="mb-3">
