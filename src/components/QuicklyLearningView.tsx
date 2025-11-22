@@ -18,12 +18,21 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
   const playCountRef = useRef(0)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const nextSentenceTimerRef = useRef<number | null>(null)
+  const isMountedRef = useRef(true)
+  const allTimersRef = useRef<Set<number>>(new Set())
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchSentence()
     
     // Cleanup on unmount
     return () => {
+      isMountedRef.current = false
+      
+      // Clear all tracked timers
+      allTimersRef.current.forEach(timer => clearTimeout(timer))
+      allTimersRef.current.clear()
+      
       if (audioRef.current) {
         try { 
           audioRef.current.pause()
@@ -39,6 +48,8 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
   }, [token])
 
   async function fetchSentence() {
+    if (!isMountedRef.current) return
+    
     setLoading(true)
     setError(null)
     setPlaying(false)
@@ -48,11 +59,15 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
     // Clear any existing timer
     if (nextSentenceTimerRef.current) {
       clearTimeout(nextSentenceTimerRef.current)
+      allTimersRef.current.delete(nextSentenceTimerRef.current)
       nextSentenceTimerRef.current = null
     }
     
     if (audioRef.current) { 
-      try { audioRef.current.pause() } catch { } 
+      try { 
+        audioRef.current.pause()
+        audioRef.current.onended = null
+      } catch { } 
       audioRef.current = null 
     }
     
@@ -67,18 +82,27 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
 
       const result = await get<UserLearningSentenceDto>(url, token)
 
+      if (!isMountedRef.current) return
+      
       setSentence(result)
       
       // Start automatic audio playback
-      setTimeout(() => {
-        playAudioAutomatically(result)
-      }, 500)
+      const timerId = setTimeout(() => {
+        allTimersRef.current.delete(timerId)
+        if (isMountedRef.current) {
+          playAudioAutomatically(result)
+        }
+      }, 1000) as unknown as number
+      allTimersRef.current.add(timerId)
       
     } catch (err: any) {
+      if (!isMountedRef.current) return
       setError(err.message || String(err))
       setSentence(null)
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 
@@ -88,18 +112,28 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
   }
 
   function playAudioAutomatically(sent: UserLearningSentenceDto) {
+    if (!isMountedRef.current) return
+    
     const src = getAudioSrc(sent.audioUrl)
     if (!src) {
       // If no audio, move to next sentence after 5 seconds
-      nextSentenceTimerRef.current = setTimeout(() => {
-        fetchSentence()
+      const timerId = setTimeout(() => {
+        allTimersRef.current.delete(timerId)
+        if (isMountedRef.current) {
+          fetchSentence()
+        }
       }, 5000) as unknown as number
+      nextSentenceTimerRef.current = timerId
+      allTimersRef.current.add(timerId)
       return
     }
 
     // Stop any existing audio
     if (audioRef.current) {
-      try { audioRef.current.pause() } catch { }
+      try { 
+        audioRef.current.pause()
+        audioRef.current.onended = null
+      } catch { }
       audioRef.current = null
     }
 
@@ -109,14 +143,22 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
     
     a.play().catch(err => { 
       console.error('Audio play failed:', err)
+      if (!isMountedRef.current) return
       setPlaying(false)
       // Move to next sentence if audio fails
-      nextSentenceTimerRef.current = setTimeout(() => {
-        fetchSentence()
+      const timerId = setTimeout(() => {
+        allTimersRef.current.delete(timerId)
+        if (isMountedRef.current) {
+          fetchSentence()
+        }
       }, 5000) as unknown as number
+      nextSentenceTimerRef.current = timerId
+      allTimersRef.current.add(timerId)
     })
     
-    a.onended = () => { 
+    a.onended = () => {
+      if (!isMountedRef.current) return
+      
       setPlaying(false)
       audioRef.current = null
       
@@ -125,14 +167,23 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
       
       if (playCountRef.current < 2) {
         // Play again for the second time
-        setTimeout(() => {
-          playAudioAutomatically(sent)
-        }, 500)
+        const timerId = setTimeout(() => {
+          allTimersRef.current.delete(timerId)
+          if (isMountedRef.current) {
+            playAudioAutomatically(sent)
+          }
+        }, 500) as unknown as number
+        allTimersRef.current.add(timerId)
       } else {
         // Played twice, wait 5 seconds then fetch next sentence
-        nextSentenceTimerRef.current = setTimeout(() => {
-          fetchSentence()
+        const timerId = setTimeout(() => {
+          allTimersRef.current.delete(timerId)
+          if (isMountedRef.current) {
+            fetchSentence()
+          }
         }, 5000) as unknown as number
+        nextSentenceTimerRef.current = timerId
+        allTimersRef.current.add(timerId)
       }
     }
   }
@@ -171,6 +222,7 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
     // Clear timer if manually navigating
     if (nextSentenceTimerRef.current) {
       clearTimeout(nextSentenceTimerRef.current)
+      allTimersRef.current.delete(nextSentenceTimerRef.current)
       nextSentenceTimerRef.current = null
     }
     fetchSentence()

@@ -84,3 +84,9 @@ body {
 .loading-overlay .spinner-border {
   border-width: 0.3rem;
 }
+
+.mb-transcription {
+    background-color: #faebd7b0;
+    padding: 4px;
+    border-radius: 6px;
+}
