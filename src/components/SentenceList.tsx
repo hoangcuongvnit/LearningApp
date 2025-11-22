@@ -3,7 +3,7 @@ import { get, del } from '../utils/api'
 import CreateSentenceForm from './CreateSentenceForm'
 
 interface UserLearningSentenceDto {
-  sentenceId: string
+  id: string
   original: string
   language: string
   vietnamese?: string
@@ -121,7 +121,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     if (!src) return
 
     // if currently playing this item -> stop
-    if (playingId === it.sentenceId && audioRef.current) {
+    if (playingId === it.id && audioRef.current) {
       audioRef.current.pause()
       audioRef.current.currentTime = 0
       audioRef.current = null
@@ -139,7 +139,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
     const a = new Audio(src)
     audioRef.current = a
     a.play().then(() => {
-      setPlayingId(it.sentenceId)
+      setPlayingId(it.id)
     }).catch(err => {
       console.error('audio play failed', err)
       setPlayingId(null)
@@ -152,7 +152,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
 
   function handleEdit(it: UserLearningSentenceDto) {
     const sentence: Sentence = {
-      id: it.sentenceId,
+      id: it.id,
       original: it.original,
       language: it.language,
       vietnamese: it.vietnamese,
@@ -206,7 +206,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
             </thead>
             <tbody>
               {items.map(it => (
-                <tr key={it.sentenceId} className='row-sentence'>
+                <tr key={it.id} className='row-sentence'>
                   <td>
                     <div 
                       className="fw-bold" 
@@ -221,11 +221,11 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
                     {it.audioUrl ? (
                       <div>
                         <button 
-                          aria-label={playingId === it.sentenceId ? 'Pause' : 'Play'} 
+                          aria-label={playingId === it.id ? 'Pause' : 'Play'} 
                           className="btn btn-sm btn-outline-secondary" 
                           onClick={() => togglePlay(it)}
                         >
-                          {playingId === it.sentenceId ? '⏸' : '▶'}
+                          {playingId === it.id ? '⏸' : '▶'}
                         </button>
                       </div>
                     ) : (
@@ -243,7 +243,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
                       </button>
                       <button 
                         className="btn btn-sm btn-outline-danger" 
-                        onClick={() => remove(it.sentenceId)}
+                        onClick={() => remove(it.id)}
                       >
                         Del
                       </button>
@@ -317,7 +317,7 @@ export default function SentenceList({ token, onEdit }: { token?: string, onEdit
                           className="btn btn-outline-primary me-2" 
                           onClick={() => togglePlay(viewingSentence)}
                         >
-                          {playingId === viewingSentence.sentenceId ? '⏸ Pause' : '▶ Play'}
+                          {playingId === viewingSentence.id ? '⏸ Pause' : '▶ Play'}
                         </button>
                       )}
                     </div>
