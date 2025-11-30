@@ -146,45 +146,55 @@ export default function CreateSentenceForm({
                 placeholder="Enter the sentence in the selected language"
               />
             </div>
-            <div className="mb-3">
-              <label className="form-label">Vietnamese Translation (optional)</label>
-              <input 
-                className="form-control" 
-                value={vietnamese} 
-                onChange={e => setVietnamese(e.target.value)} 
-                placeholder=""
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Description (optional)</label>
-              <textarea 
-                className="form-control" 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                rows={3}
-                placeholder=""
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Transcription (optional)</label>
-              <input 
-                className="form-control" 
-                value={transcription} 
-                onChange={e => setTranscription(e.target.value)} 
-                placeholder=""
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Voice</label>
-              <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
-                <option value="">Random</option>
-                <option value="alloy">neutral</option>
-                <option value="echo">lively</option>
-                <option value="fable">warm</option>
-                <option value="onyx">clear</option>
-                <option value="nova">neutral</option>
-                <option value="shimmer">smooth</option>
-              </select>
+
+            <input id="create-sentence-adv-toggle" type="checkbox" />
+
+            <label htmlFor="create-sentence-adv-toggle" className="adv-toggle-label">
+              <span className="show-when-unchecked">Show advanced fields</span>
+              <span className="show-when-checked">Hide advanced fields</span>
+            </label>
+
+            <div className="advanced-fields">
+              <div className="mb-3">
+                <label className="form-label">Vietnamese Translation (optional)</label>
+                <input 
+                  className="form-control" 
+                  value={vietnamese} 
+                  onChange={e => setVietnamese(e.target.value)} 
+                  placeholder=""
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Description (optional)</label>
+                <textarea 
+                  className="form-control" 
+                  value={description} 
+                  onChange={e => setDescription(e.target.value)} 
+                  rows={3}
+                  placeholder=""
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Transcription (optional)</label>
+                <input 
+                  className="form-control" 
+                  value={transcription} 
+                  onChange={e => setTranscription(e.target.value)} 
+                  placeholder=""
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Voice</label>
+                <select className="form-select" value={voice} onChange={e => setVoice(e.target.value)}>
+                  <option value="">Random</option>
+                  <option value="alloy">neutral</option>
+                  <option value="echo">lively</option>
+                  <option value="fable">warm</option>
+                  <option value="onyx">clear</option>
+                  <option value="nova">neutral</option>
+                  <option value="shimmer">smooth</option>
+                </select>
+              </div>
             </div>
             <div className="d-flex gap-2">
               <button className="btn btn-success" disabled={loading}>

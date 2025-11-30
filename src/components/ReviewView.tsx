@@ -187,18 +187,18 @@ export default function ReviewView({ token }: { token?: string }) {
             >
               <h2 className="card-title mb-3">{sentence.vietnamese}</h2>
               <div className="mb-3 main-btn-group">
-                <button className="btn btn-outline-primary me-2" onClick={togglePlay}>
+                <button className="btn btn-primary me-2 btn-play" onClick={togglePlay}>
                   {playing ? '⏸ Pause' : '▶ Play'}
                 </button>
                 <button className="btn btn-success me-2" onClick={finish}>
                   Finish
                 </button>
-                <button className="btn btn-outline-secondary" onClick={() => setshowEN(s => !s)}>
-                  {showEN ? 'Hide English' : 'Show English'}
+                <button className="btn btn-secondary" onClick={() => setshowEN(s => !s)}>
+                  {showEN ? 'Hide' : 'Show'}
                 </button>
               </div>
 
-              <div className="show-text-feature">{showEN && sentence.original}</div>
+              <div className="show-text-feature"><span className='mb-transcription'>{showEN && sentence.original}</span></div>
               <div className='show-study-count'>{sentence.learningCount ?? 0}</div>
             </div>
 

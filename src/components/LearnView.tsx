@@ -190,14 +190,14 @@ export default function LearnView({ token, minStudyCount = 0, maxStudyCount = 5 
               <h2 className="card-title mb-3">{sentence.original}</h2>
               <p className='mb-3'><span className='mb-transcription'>{sentence.transcription}</span></p>
               <div className="mb-3 main-btn-group">
-                <button className="btn btn-primary me-2" onClick={togglePlay}>
+                <button className="btn btn-primary me-2 btn-play" onClick={togglePlay}>
                   {playing ? '⏸ Pause' : '▶ Play'}
                 </button>
                 <button className="btn btn-success me-2" onClick={finish}>
                   Finish
                 </button>
                 <button className="btn btn-secondary" onClick={() => setShowVN(s => !s)}>
-                  {showVN ? 'Hide Vietnamese' : 'Show Vietnamese'}
+                  {showVN ? 'Hide' : 'Show'}
                 </button>
               </div>
 

@@ -6,6 +6,7 @@ interface UserLearningSentenceDto {
   original: string
   audioUrl?: string
   transcription?: string
+  vietnamese?: string
   lastReviewed: string
 }
 
@@ -248,6 +249,7 @@ export default function QuicklyLearningView({ token }: { token?: string }) {
               
               <h2 className="card-title mb-3">{sentence.original}</h2>
               <p className='mb-3'>{sentence.transcription}</p>
+              <p className='mb-3 '>{sentence.vietnamese}</p>
               
               <div className="mb-3 main-btn-group">
                 <button className="btn btn-outline-primary me-2" onClick={togglePlay}>

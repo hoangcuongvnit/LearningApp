@@ -90,3 +90,23 @@ body {
     padding: 4px;
     border-radius: 6px;
 }
+
+.btn-play {
+    width: 98px;
+}
+
+/* unique toggle id to avoid collisions */
+#create-sentence-adv-toggle { display: none; }
+
+/* label styles */
+.adv-toggle-label { cursor: pointer; color: var(--bs-primary); display: inline-block; margin-bottom: .5rem; }
+
+/* advanced fields hidden by default, shown when checkbox checked */
+#create-sentence-adv-toggle ~ .advanced-fields { display: none; }
+#create-sentence-adv-toggle:checked ~ .advanced-fields { display: block; }
+
+/* swap label text */
+#create-sentence-adv-toggle:checked ~ .adv-toggle-label .show-when-checked { display: inline; }
+#create-sentence-adv-toggle:checked ~ .adv-toggle-label .show-when-unchecked { display: none; }
+#create-sentence-adv-toggle:not(:checked) ~ .adv-toggle-label .show-when-checked { display: none; }
+#create-sentence-adv-toggle:not(:checked) ~ .adv-toggle-label .show-when-unchecked { display: inline; }
