@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { post } from '../utils/api'
-import { setToken } from '../utils/auth'
+import { setTokens } from '../utils/auth'
 
 interface LoginDto {
   email: string
@@ -10,6 +10,7 @@ interface LoginDto {
 interface AuthResponseDto {
   email: string
   token: string
+  refreshToken: string
   role: string
 }
 
@@ -32,9 +33,8 @@ export default function LoginForm({
     try {
       const body: LoginDto = { email, password }
       const data = await post<AuthResponseDto>('/api/Account/login', body)
-      const token = data.token
-      setToken(token)
-      onLogin(token)
+      setTokens(data.token, data.refreshToken)
+      onLogin(data.token)
     } catch (err: any) {
       setError(err.message || String(err))
     } finally {

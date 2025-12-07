@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { post } from '../utils/api'
-import { setToken } from '../utils/auth'
+import { setTokens } from '../utils/auth'
 
 interface RegisterDto {
   email: string
@@ -11,6 +11,7 @@ interface RegisterDto {
 interface AuthResponseDto {
   email: string
   token: string
+  refreshToken: string
   role: string
 }
 
@@ -55,9 +56,8 @@ export default function RegisterForm({
       }
       
       const data = await post<AuthResponseDto>('/api/Account/register', body)
-      const token = data.token
-      setToken(token)
-      onRegister(token)
+      setTokens(data.token, data.refreshToken)
+      onRegister(data.token)
     } catch (err: any) {
       setError(err.message || String(err))
     } finally {

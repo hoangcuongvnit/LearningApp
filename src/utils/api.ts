@@ -1,8 +1,65 @@
 const API_URL = 'https://aznet.io.vn'
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false
+let refreshSubscribers: Array<(token: string) => void> = []
+
 export interface ApiError {
   message: string
   status: number
+}
+
+interface RefreshTokenRequestDto {
+  refreshToken: string
+}
+
+interface AuthResponseDto {
+  email: string
+  token: string
+  refreshToken: string
+  role: string
+}
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach(callback => callback(token))
+  refreshSubscribers = []
+}
+
+function addRefreshSubscriber(callback: (token: string) => void) {
+  refreshSubscribers.push(callback)
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  const { getRefreshToken, setTokens, clearTokens } = await import('./auth')
+  const refreshToken = getRefreshToken()
+  
+  if (!refreshToken) {
+    return null
+  }
+
+  try {
+    const body: RefreshTokenRequestDto = { refreshToken }
+    const res = await fetch(`${API_URL}/api/Account/refresh-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+
+    if (!res.ok) {
+      // Refresh token is invalid or expired, clear tokens
+      clearTokens()
+      return null
+    }
+
+    const data: AuthResponseDto = await res.json()
+    setTokens(data.token, data.refreshToken)
+    return data.token
+  } catch (error) {
+    clearTokens()
+    return null
+  }
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
@@ -33,7 +90,9 @@ async function handleResponse<T>(res: Response): Promise<T> {
     } catch {
       // If parsing fails, use the default error message
     }
-    throw new Error(errorMessage)
+    const error: any = new Error(errorMessage)
+    error.status = res.status
+    throw error
   }
 
   // Handle 204 No Content
@@ -44,19 +103,74 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json()
 }
 
+async function fetchWithTokenRefresh<T>(
+  url: string, 
+  options: RequestInit
+): Promise<T> {
+  let res = await fetch(url, options)
+  
+  // If 401 Unauthorized, try to refresh the token
+  if (res.status === 401) {
+    const { getToken } = await import('./auth')
+    const currentToken = getToken()
+    
+    // Only attempt refresh if we have a token (meaning we were authenticated)
+    if (currentToken) {
+      if (!isRefreshing) {
+        isRefreshing = true
+        const newToken = await refreshAccessToken()
+        isRefreshing = false
+        
+        if (newToken) {
+          onRefreshed(newToken)
+          
+          // Retry the original request with the new token
+          const headers = new Headers(options.headers)
+          headers.set('Authorization', `Bearer ${newToken}`)
+          
+          res = await fetch(url, {
+            ...options,
+            headers
+          })
+        } else {
+          // Refresh failed, redirect to login
+          window.location.reload()
+        }
+      } else {
+        // Wait for the refresh to complete
+        const newToken = await new Promise<string>((resolve) => {
+          addRefreshSubscriber((token: string) => {
+            resolve(token)
+          })
+        })
+        
+        // Retry with new token
+        const headers = new Headers(options.headers)
+        headers.set('Authorization', `Bearer ${newToken}`)
+        
+        res = await fetch(url, {
+          ...options,
+          headers
+        })
+      }
+    }
+  }
+  
+  return handleResponse<T>(res)
+}
+
 export async function get<T>(endpoint: string, token?: string): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  return fetchWithTokenRefresh<T>(`${API_URL}${endpoint}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     }
   })
-  return handleResponse<T>(res)
 }
 
 export async function post<T>(endpoint: string, body?: any, token?: string): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  return fetchWithTokenRefresh<T>(`${API_URL}${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -64,11 +178,10 @@ export async function post<T>(endpoint: string, body?: any, token?: string): Pro
     },
     body: body ? JSON.stringify(body) : undefined
   })
-  return handleResponse<T>(res)
 }
 
 export async function put<T>(endpoint: string, body?: any, token?: string): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  return fetchWithTokenRefresh<T>(`${API_URL}${endpoint}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -76,18 +189,16 @@ export async function put<T>(endpoint: string, body?: any, token?: string): Prom
     },
     body: body ? JSON.stringify(body) : undefined
   })
-  return handleResponse<T>(res)
 }
 
 export async function del<T>(endpoint: string, token?: string): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  return fetchWithTokenRefresh<T>(`${API_URL}${endpoint}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     }
   })
-  return handleResponse<T>(res)
 }
 
 // Legacy graphql function for backwards compatibility during migration

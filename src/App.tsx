@@ -6,7 +6,7 @@ import LearnView from './components/LearnView'
 import ReviewView from './components/ReviewView'
 import QuicklyLearningView from './components/QuicklyLearningView'
 import SentenceList from './components/SentenceList'
-import { getToken, setToken, clearToken, isAuthenticated } from './utils/auth'
+import { getToken, setTokens, clearTokens, isAuthenticated } from './utils/auth'
 
 type View = 'learn' | 'review' | 'advanced' | 'quickly' | 'list' | 'create' | 'login' | 'register'
 
@@ -26,19 +26,17 @@ export default function App() {
   }, [])
 
   function onLogin(newToken: string) {
-    setToken(newToken)
     setTokenState(newToken)
     setView('learn')
   }
 
   function onRegister(newToken: string) {
-    setToken(newToken)
     setTokenState(newToken)
     setView('learn')
   }
 
   function onLogout() {
-    clearToken()
+    clearTokens()
     setTokenState(null)
     setView('login')
   }
